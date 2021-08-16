@@ -42,5 +42,5 @@ rosbag play HKU_MB_2020-09-20-13-34-51.bag
 roslaunch fast_lio mapping_ouster64_mulran.launch # setting for MulRan dataset  
 5. SC-PGO对MulRan数据集  
 roslaunch aloam_velodyne fastlio_ouster64.launch # setting for MulRan dataset  
-# open the other terminal tab  
-# run file_player_mulran (for the details, refer here https://github.com/irapkaist/file_player_mulran)  
+
+对于MulRan数据集的播放，打开新的终端，使用file_player_mulran播放MulRan数据(详情请参考：https://github.com/irapkaist/file_player_mulran)  
