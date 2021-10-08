@@ -322,6 +322,7 @@ void livox_pcl_cbk(const livox_ros_driver::CustomMsg::ConstPtr &msg)
     mtx_buffer.lock();
     double preprocess_start_time = omp_get_wtime();
     scan_count++;
+    // 检查lidar时间戳，不能小于-1，也不能小于后一帧点云的时间
     if (msg->header.stamp.toSec() < last_timestamp_lidar)
     {
         ROS_ERROR("lidar loop back, clear buffer");
@@ -367,7 +368,7 @@ void imu_cbk(const sensor_msgs::Imu::ConstPtr &msg_in)
     double timestamp = msg->header.stamp.toSec();
 
     mtx_buffer.lock();
-
+    // 检查IMU时间戳，当前帧时间大于上一帧时间
     if (timestamp < last_timestamp_imu)
     {
         ROS_WARN("imu loop back, clear buffer");
@@ -404,6 +405,7 @@ bool sync_packages(MeasureGroup &meas)
         lidar_pushed = true;
     }
 
+    // IMU的时间得包住Lidar，即最后一个点的时间得比IMU的时间小，所以IMU的频率必须比lidar的频率要高
     if (last_timestamp_imu < lidar_end_time)
     {
         return false;
@@ -412,10 +414,10 @@ bool sync_packages(MeasureGroup &meas)
     /*** push imu data, and pop from imu buffer ***/
     double imu_time = imu_buffer.front()->header.stamp.toSec();
     meas.imu.clear();
-    while ((!imu_buffer.empty()) && (imu_time < lidar_end_time))
+    while ((!imu_buffer.empty()) && (imu_time < lidar_end_time)) // imu的时间必须比lidar的时间大或相等
     {
         imu_time = imu_buffer.front()->header.stamp.toSec();
-        if (imu_time > lidar_end_time)
+        if (imu_time > lidar_end_time) // IMU频率得大于50HZ
             break;
 
         meas.imu.push_back(imu_buffer.front());

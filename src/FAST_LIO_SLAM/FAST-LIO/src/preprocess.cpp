@@ -10,7 +10,7 @@ Preprocess::Preprocess()
   N_SCANS = 6;
   group_size = 8;
   disA = 0.01;
-  disA = 0.1; // B?
+  disA = 0.1;
   p2l_ratio = 225;
   limit_maxmid = 6.25;
   limit_midmin = 6.25;
@@ -573,6 +573,7 @@ void Preprocess::give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &t
         {
           types[i].edj[j] = Nr_blind;
         }
+
         continue;
       }
 
@@ -665,10 +666,12 @@ void Preprocess::give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &t
         {
           types[i - 1].ftype = Real_Plane;
         }
+
         if (types[i + 1].ftype == Nor)
         {
           types[i + 1].ftype = Real_Plane;
         }
+
         types[i].ftype = Real_Plane;
       }
     }
@@ -703,6 +706,7 @@ void Preprocess::give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &t
       {
         pl_corn.push_back(pl[j]);
       }
+
       if (last_surface != -1)
       {
         PointType ap;
@@ -714,6 +718,7 @@ void Preprocess::give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &t
           ap.intensity += pl[k].intensity;
           ap.curvature += pl[k].curvature;
         }
+
         ap.x /= (j - last_surface);
         ap.y /= (j - last_surface);
         ap.z /= (j - last_surface);
@@ -721,6 +726,7 @@ void Preprocess::give_feature(pcl::PointCloud<PointType> &pl, vector<orgtype> &t
         ap.curvature /= (j - last_surface);
         pl_surf.push_back(ap);
       }
+
       last_surface = -1;
     }
   }
@@ -853,6 +859,7 @@ int Preprocess::plane_judge(const PointCloudXYZI &pl, vector<orgtype> &types, ui
 
   curr_direct << vx, vy, vz;
   curr_direct.normalize();
+
   return 1;
 }
 

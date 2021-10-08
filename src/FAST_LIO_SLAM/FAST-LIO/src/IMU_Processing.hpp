@@ -24,13 +24,17 @@
 #include <geometry_msgs/Vector3.h>
 #include "use-ikfom.hpp"
 
-/// *************Preconfiguration
+/*
+  IMU_Processing主要进行IMU预处理。
+*/
+
+// *************Preconfiguration
 
 #define MAX_INI_COUNT (20)
 
 const bool time_list(PointType &x, PointType &y) { return (x.curvature < y.curvature); };
 
-/// *************IMU Process and undistortion
+// *************IMU Process and undistortion
 class ImuProcess
 {
 public:
@@ -296,6 +300,8 @@ void ImuProcess::UndistortPcl(const MeasureGroup &meas, esekfom::esekf<state_ikf
     IMUpose.push_back(set_pose6d(offs_t, acc_s_last, angvel_last, imu_state.vel, imu_state.pos, imu_state.rot.toRotationMatrix()));
   }
 
+  // PCL的最后一个点的时间和IMU的最后一个时间往往不是精准对齐的，这里根据最后一个IMU的姿态，计算了最后一个点云的姿态，这个是我们其他所有其他时刻的点云要对准的坐标系
+
   /*** calculated the pos and attitude prediction at the frame-end ***/
   double note = pcl_end_time > imu_end_time ? 1.0 : -1.0;
   dt = note * (pcl_end_time - imu_end_time);
@@ -361,7 +367,7 @@ void ImuProcess::Process(const MeasureGroup &meas, esekfom::esekf<state_ikfom, 1
   if (meas.imu.empty())
   {
     return;
-  };
+  }
 
   ROS_ASSERT(meas.lidar != nullptr);
 
@@ -389,6 +395,8 @@ void ImuProcess::Process(const MeasureGroup &meas, esekfom::esekf<state_ikfom, 1
     return;
   }
 
+  // Undistort points：the first point is assummed as the base frame
+  // Compensate lidar points with IMU rotation (with only rotation now)
   UndistortPcl(meas, kf_state, *cur_pcl_un_);
 
   t2 = omp_get_wtime();

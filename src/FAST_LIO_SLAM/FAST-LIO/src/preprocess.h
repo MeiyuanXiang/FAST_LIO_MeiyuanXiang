@@ -16,6 +16,7 @@ enum LID_TYPE
   VELO16,
   OUST64
 }; //{1, 2, 3} 支持的雷达类型
+
 enum Feature
 {
   Nor,
@@ -26,11 +27,13 @@ enum Feature
   Wire,
   ZeroPoint
 }; // 特征类型：正常、可能的平面点、确定的平面点、有跨越的边、边上的平面点、线段、无效点
+
 enum Surround
 {
   Prev,
   Next
 }; // 位置标识：前一个、后一个
+
 enum E_jump
 {
   Nr_nor,

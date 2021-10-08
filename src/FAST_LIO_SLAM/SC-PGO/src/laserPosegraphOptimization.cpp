@@ -411,12 +411,12 @@ void loopFindNearKeyframesCloud(pcl::PointCloud<PointType>::Ptr &nearKeyframes, 
     nearKeyframes->clear();
     for (int i = -submap_size; i <= submap_size; ++i)
     {
-        int keyNear = root_idx + i;
+        int keyNear = key + i;
         if (keyNear < 0 || keyNear >= int(keyframeLaserClouds.size()))
             continue;
 
         mKF.lock();
-        *nearKeyframes += *local2global(keyframeLaserClouds[keyNear], keyframePosesUpdated[keyNear]);
+        *nearKeyframes += *local2global(keyframeLaserClouds[keyNear], keyframePosesUpdated[root_idx]);
         mKF.unlock();
     }
 
