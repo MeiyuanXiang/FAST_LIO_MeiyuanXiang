@@ -3,9 +3,16 @@
 
 #include <math.h>
 #include <Eigen/Core>
-#include <opencv2/core.hpp>
 
 #define SKEW_SYM_MATRX(v) 0.0, -v[2], v[1], v[2], 0.0, -v[0], -v[1], v[0], 0.0
+
+template <typename T>
+Eigen::Matrix<T, 3, 3> skew_sym_mat(const Eigen::Matrix<T, 3, 1> &v)
+{
+    Eigen::Matrix<T, 3, 3> skew_sym_mat;
+    skew_sym_mat << 0.0, -v[2], v[1], v[2], 0.0, -v[0], -v[1], v[0], 0.0;
+    return skew_sym_mat;
+}
 
 template <typename T>
 Eigen::Matrix<T, 3, 3> Exp(const Eigen::Matrix<T, 3, 1> &&ang)
@@ -17,6 +24,7 @@ Eigen::Matrix<T, 3, 3> Exp(const Eigen::Matrix<T, 3, 1> &&ang)
         Eigen::Matrix<T, 3, 1> r_axis = ang / ang_norm;
         Eigen::Matrix<T, 3, 3> K;
         K << SKEW_SYM_MATRX(r_axis);
+
         // Roderigous Tranformation
         return Eye3 + std::sin(ang_norm) * K + (1.0 - std::cos(ang_norm)) * K * K;
     }
@@ -97,6 +105,7 @@ Eigen::Matrix<T, 3, 1> RotMtoEuler(const Eigen::Matrix<T, 3, 3> &rot)
         y = atan2(-rot(2, 0), sy);
         z = 0;
     }
+    
     Eigen::Matrix<T, 3, 1> ang(x, y, z);
     return ang;
 }

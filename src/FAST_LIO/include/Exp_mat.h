@@ -17,6 +17,7 @@ Eigen::Matrix<T, 3, 3> Exp(const Eigen::Matrix<T, 3, 1> &&ang)
         Eigen::Matrix<T, 3, 1> r_axis = ang / ang_norm;
         Eigen::Matrix<T, 3, 3> K;
         K << SKEW_SYM_MATRX(r_axis);
+        
         // Roderigous Tranformation
         return Eye3 + std::sin(ang_norm) * K + (1.0 - std::cos(ang_norm)) * K * K;
     }

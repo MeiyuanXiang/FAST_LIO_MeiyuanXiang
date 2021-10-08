@@ -104,7 +104,7 @@ namespace matplotlibcpp
                multiple independent embedded python interpreters without patching the python source code
                or starting a separate process for each.
                http://bytes.com/topic/python/answers/793370-multiple-independent-python-interpreters-c-c-program
-            */
+               */
 
             static _interpreter &get()
             {
@@ -128,21 +128,26 @@ namespace matplotlibcpp
         private:
 #ifndef WITHOUT_NUMPY
 #if PY_MAJOR_VERSION >= 3
+
             void *import_numpy()
             {
                 import_array(); // initialize C-API
                 return NULL;
             }
+
 #else
+
             void import_numpy()
             {
                 import_array(); // initialize C-API
             }
+
 #endif
 #endif
 
             _interpreter()
             {
+
                 // optional but recommended
 #if PY_MAJOR_VERSION >= 3
                 wchar_t name[] = L"plotting";
@@ -251,7 +256,6 @@ namespace matplotlibcpp
                 s_python_function_bar = safe_import(pymod, "bar");
                 s_python_function_colorbar = PyObject_GetAttrString(pymod, "colorbar");
                 s_python_function_subplots_adjust = safe_import(pymod, "subplots_adjust");
-
 #ifndef WITHOUT_NUMPY
                 s_python_function_imshow = safe_import(pymod, "imshow");
 #endif
@@ -266,15 +270,15 @@ namespace matplotlibcpp
 
     } // end namespace detail
 
-    // Select the backend
-    //
-    // **NOTE:** This must be called before the first plot command to have
-    // any effect.
-    //
-    // Mainly useful to select the non-interactive 'Agg' backend when running
-    // matplotlibcpp in headless mode, for example on a machine with no display.
-    //
-    // See also: https://matplotlib.org/2.0.2/api/matplotlib_configuration_api.html#matplotlib.use
+    /// Select the backend
+    ///
+    /// **NOTE:** This must be called before the first plot command to have
+    /// any effect.
+    ///
+    /// Mainly useful to select the non-interactive 'Agg' backend when running
+    /// matplotlibcpp in headless mode, for example on a machine with no display.
+    ///
+    /// See also: https://matplotlib.org/2.0.2/api/matplotlib_configuration_api.html#matplotlib.use
     inline void backend(const std::string &name)
     {
         detail::s_backend = name;
@@ -315,57 +319,68 @@ namespace matplotlibcpp
         struct select_npy_type
         {
             const static NPY_TYPES type = NPY_NOTYPE;
-        }; // Default
+        }; //Default
+
         template <>
         struct select_npy_type<double>
         {
             const static NPY_TYPES type = NPY_DOUBLE;
         };
+
         template <>
         struct select_npy_type<float>
         {
             const static NPY_TYPES type = NPY_FLOAT;
         };
+
         template <>
         struct select_npy_type<bool>
         {
             const static NPY_TYPES type = NPY_BOOL;
         };
+
         template <>
         struct select_npy_type<int8_t>
         {
             const static NPY_TYPES type = NPY_INT8;
         };
+
         template <>
         struct select_npy_type<int16_t>
         {
             const static NPY_TYPES type = NPY_SHORT;
         };
+
         template <>
         struct select_npy_type<int32_t>
         {
             const static NPY_TYPES type = NPY_INT;
         };
+
         template <>
         struct select_npy_type<int64_t>
         {
             const static NPY_TYPES type = NPY_INT64;
         };
+
         template <>
         struct select_npy_type<uint8_t>
         {
             const static NPY_TYPES type = NPY_UINT8;
         };
+
         template <>
         struct select_npy_type<uint16_t>
         {
             const static NPY_TYPES type = NPY_USHORT;
         };
+
         template <>
         struct select_npy_type<uint32_t>
         {
             const static NPY_TYPES type = NPY_ULONG;
         };
+
         template <>
         struct select_npy_type<uint64_t>
         {
@@ -380,6 +395,7 @@ namespace matplotlibcpp
         {
             const static NPY_TYPES type = NPY_INT64;
         };
+
         static_assert(sizeof(unsigned long long) == 8);
         template <>
         struct select_npy_type<unsigned long long>
@@ -399,8 +415,10 @@ namespace matplotlibcpp
                 double *dp = static_cast<double *>(::malloc(memsize));
                 for (size_t i = 0; i < v.size(); ++i)
                     dp[i] = v[i];
+
                 PyObject *varray = PyArray_SimpleNewFromData(1, &vsize, NPY_DOUBLE, dp);
                 PyArray_UpdateFlags(reinterpret_cast<PyArrayObject *>(varray), NPY_ARRAY_OWNDATA);
+
                 return varray;
             }
 
@@ -426,6 +444,7 @@ namespace matplotlibcpp
             {
                 if (v_row.size() != static_cast<size_t>(vsize[1]))
                     throw std::runtime_error("Missmatched array size");
+
                 std::copy(v_row.begin(), v_row.end(), vd_begin);
                 vd_begin += vsize[1];
             }
@@ -433,7 +452,7 @@ namespace matplotlibcpp
             return reinterpret_cast<PyObject *>(varray);
         }
 
-#else  // fallback if we don't have numpy: copy every element of the given vector
+#else // fallback if we don't have numpy: copy every element of the given vector
 
         template <typename Numeric>
         PyObject *get_array(const std::vector<Numeric> &v)
@@ -446,7 +465,7 @@ namespace matplotlibcpp
             return list;
         }
 
-#endif  // WITHOUT_NUMPY
+#endif // WITHOUT_NUMPY
 
         // sometimes, for labels and such, we need string arrays
         inline PyObject *get_array(const std::vector<std::string> &strings)
@@ -456,6 +475,7 @@ namespace matplotlibcpp
             {
                 PyList_SetItem(list, i, PyString_FromString(strings[i].c_str()));
             }
+
             return list;
         }
 
@@ -468,14 +488,15 @@ namespace matplotlibcpp
             {
                 PyList_SetItem(listlist, i, get_array(ll[i]));
             }
+
             return listlist;
         }
 
     } // namespace detail
 
-    // Plot a line through the given x and y data points..
-    //
-    // See: https://matplotlib.org/3.2.1/api/_as_gen/matplotlib.pyplot.plot.html
+    /// Plot a line through the given x and y data points..
+    ///
+    /// See: https://matplotlib.org/3.2.1/api/_as_gen/matplotlib.pyplot.plot.html
     template <typename Numeric>
     bool plot(const std::vector<Numeric> &x, const std::vector<Numeric> &y, const std::map<std::string, std::string> &keywords)
     {
@@ -929,6 +950,7 @@ namespace matplotlibcpp
             else
                 Py_DECREF(res);
         }
+
     } // namespace detail
 
     inline void imshow(const unsigned char *ptr, const int rows, const int columns, const int colors, const std::map<std::string, std::string> &keywords = {}, PyObject **out = nullptr)
@@ -1569,6 +1591,7 @@ namespace matplotlibcpp
         std::vector<Numeric> x(y.size());
         for (size_t i = 0; i < x.size(); ++i)
             x.at(i) = i;
+
         return plot(x, y, format);
     }
 
@@ -1578,6 +1601,7 @@ namespace matplotlibcpp
         std::vector<Numeric> x(y.size());
         for (size_t i = 0; i < x.size(); ++i)
             x.at(i) = i;
+
         return plot(x, y, keywords);
     }
 
@@ -1587,6 +1611,7 @@ namespace matplotlibcpp
         std::vector<Numeric> x(y.size());
         for (size_t i = 0; i < x.size(); ++i)
             x.at(i) = i;
+
         return stem(x, y, format);
     }
 
@@ -2239,16 +2264,19 @@ namespace matplotlibcpp
                                 detail::_interpreter::get().s_python_empty_tuple);
         if (!ax)
             throw std::runtime_error("Call to gca() failed.");
+
         Py_INCREF(ax);
 
         PyObject *zlabel = PyObject_GetAttrString(ax, "set_zlabel");
         if (!zlabel)
             throw std::runtime_error("Attribute set_zlabel not found.");
+
         Py_INCREF(zlabel);
 
         PyObject *res = PyObject_Call(zlabel, args, kwargs);
         if (!res)
             throw std::runtime_error("Call to set_zlabel() failed.");
+
         Py_DECREF(zlabel);
 
         Py_DECREF(ax);
@@ -2455,6 +2483,7 @@ namespace matplotlibcpp
             position[1] = PyFloat_AsDouble(PyTuple_GetItem(current, 1));
             out.push_back(position);
         }
+
         Py_DECREF(res);
 
         return out;
@@ -2476,6 +2505,7 @@ namespace matplotlibcpp
     }
 
     // Support for variadic plot() and initializer lists:
+
     namespace detail
     {
         template <typename T>
@@ -2497,6 +2527,7 @@ namespace matplotlibcpp
             {
                 void operator()();
             };
+
             struct Derived : T, Fallback
             {
             };
@@ -2583,10 +2614,10 @@ namespace matplotlibcpp
                 std::vector<double> y;
                 for (auto x : ticks)
                     y.push_back(f(x));
+
                 return plot_impl<std::false_type>()(ticks, y, format);
             }
         };
-
     } // end namespace detail
 
     // recursion stop for the above
@@ -2659,6 +2690,7 @@ namespace matplotlibcpp
                     set_data_fct = PyObject_GetAttrString(line, "set_data");
                 else
                     Py_DECREF(line);
+
                 Py_DECREF(res);
             }
         }
@@ -2684,8 +2716,10 @@ namespace matplotlibcpp
                 PyObject *res = PyObject_CallObject(set_data_fct, plot_args);
                 if (res)
                     Py_DECREF(res);
+
                 return res;
             }
+
             return false;
         }
 
@@ -2706,6 +2740,7 @@ namespace matplotlibcpp
                 if (res)
                     Py_DECREF(res);
             }
+
             decref();
         }
 
@@ -2719,6 +2754,7 @@ namespace matplotlibcpp
         {
             if (line)
                 Py_DECREF(line);
+
             if (set_data_fct)
                 Py_DECREF(set_data_fct);
         }
@@ -2726,5 +2762,4 @@ namespace matplotlibcpp
         PyObject *line = nullptr;
         PyObject *set_data_fct = nullptr;
     };
-
 } // end namespace matplotlibcpp
