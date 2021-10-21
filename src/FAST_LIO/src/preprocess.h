@@ -5,7 +5,7 @@
 
 using namespace std;
 
-#define IS_VALID(a) ((abs(a) > 1e8) ? true : false) // Ã»ÓÃµ½
+#define IS_VALID(a) ((abs(a) > 1e8) ? true : false) // æ²¡ç”¨åˆ°
 
 typedef pcl::PointXYZINormal PointType;
 typedef pcl::PointCloud<PointType> PointCloudXYZI;
@@ -15,7 +15,7 @@ enum LID_TYPE
   AVIA = 1,
   VELO16,
   OUST64
-}; //{1, 2, 3} Ö§³ÖµÄÀ×´ïÀàĞÍ
+}; //{1, 2, 3} æ”¯æŒçš„é›·è¾¾ç±»å‹
 
 enum Feature
 {
@@ -26,13 +26,13 @@ enum Feature
   Edge_Plane,
   Wire,
   ZeroPoint
-}; // ÌØÕ÷ÀàĞÍ£ºÕı³£¡¢¿ÉÄÜµÄÆ½Ãæµã¡¢È·¶¨µÄÆ½Ãæµã¡¢ÓĞ¿çÔ½µÄ±ß¡¢±ßÉÏµÄÆ½Ãæµã¡¢Ïß¶Î¡¢ÎŞĞ§µã
+}; // ç‰¹å¾ç±»å‹ï¼šæ­£å¸¸ã€å¯èƒ½çš„å¹³é¢ç‚¹ã€ç¡®å®šçš„å¹³é¢ç‚¹ã€æœ‰è·¨è¶Šçš„è¾¹ã€è¾¹ä¸Šçš„å¹³é¢ç‚¹ã€çº¿æ®µã€æ— æ•ˆç‚¹
 
 enum Surround
 {
   Prev,
   Next
-}; // Î»ÖÃ±êÊ¶£ºÇ°Ò»¸ö¡¢ºóÒ»¸ö
+}; // ä½ç½®æ ‡è¯†ï¼šå‰ä¸€ä¸ªã€åä¸€ä¸ª
 
 enum E_jump
 {
@@ -41,16 +41,16 @@ enum E_jump
   Nr_180,
   Nr_inf,
   Nr_blind
-}; // ÓĞ¿çÔ½±ßµÄÀàĞÍ£ºÕı³£¡¢0¡¢180¡¢ÎŞÇî´ó¡¢×î´óÖµ
+}; // æœ‰è·¨è¶Šè¾¹çš„ç±»å‹ï¼šæ­£å¸¸ã€0ã€180ã€æ— ç©·å¤§ã€æœ€å¤§å€¼
 
 struct orgtype
 {
-  double range;     // ºÍÁÚ½üµãµÄµã¾à£¬ÓÃÒÔÈ·¶¨ÊÇ·ñÎªÖØ¸´µã£¬Ä¬ÈÏÎªµ±Ç°µãµÄx×ø±ê£¬µ«ÊÇ×îºóÒ»¸öµãÈ¡xyÆ½ÃæÏòÁ¿µÄÄ£
-  double dista;     // µ±Ç°µãÓë×îºóÒ»¸öµã¾àÀëµÄÆ½·½
-  double angle[2];  // µ±Ç°µãÓëÇ°Ò»¸öµãµÄ¼Ğ½Ç¡¢µ±Ç°µãÓëºóÒ»¸öµãµÄ¼Ğ½Ç
-  double intersect; // Ç°Ò»¸öµãºÍºóÒ»¸öµã¼Ğ½Ç
-  E_jump edj[2];    // Ç°ºóÁ½µãµÄÀàĞÍ
-  Feature ftype;    // µãÀàĞÍ
+  double range;     // å’Œé‚»è¿‘ç‚¹çš„ç‚¹è·ï¼Œç”¨ä»¥ç¡®å®šæ˜¯å¦ä¸ºé‡å¤ç‚¹ï¼Œé»˜è®¤ä¸ºå½“å‰ç‚¹çš„xåæ ‡ï¼Œä½†æ˜¯æœ€åä¸€ä¸ªç‚¹å–xyå¹³é¢å‘é‡çš„æ¨¡
+  double dista;     // å½“å‰ç‚¹ä¸æœ€åä¸€ä¸ªç‚¹è·ç¦»çš„å¹³æ–¹
+  double angle[2];  // å½“å‰ç‚¹ä¸å‰ä¸€ä¸ªç‚¹çš„å¤¹è§’ã€å½“å‰ç‚¹ä¸åä¸€ä¸ªç‚¹çš„å¤¹è§’
+  double intersect; // å‰ä¸€ä¸ªç‚¹å’Œåä¸€ä¸ªç‚¹å¤¹è§’
+  E_jump edj[2];    // å‰åä¸¤ç‚¹çš„ç±»å‹
+  Feature ftype;    // ç‚¹ç±»å‹
   orgtype()
   {
     range = 0;
@@ -61,36 +61,36 @@ struct orgtype
   }
 };
 
-// velodyneÊı¾İ½á¹¹
+// velodyneæ•°æ®ç»“æ„
 namespace velodyne_ros
 {
   struct EIGEN_ALIGN16 Point
   {
-    PCL_ADD_POINT4D;                // 4Dµã×ø±êÀàĞÍ
-    float intensity;                // Ç¿¶È
-    float time;                     // Ê±¼ä
-    uint16_t ring;                  // µãËùÊôµÄÈ¦Êı
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW // ½øĞĞÄÚ´æ¶ÔÆë
+    PCL_ADD_POINT4D;                // 4Dç‚¹åæ ‡ç±»å‹
+    float intensity;                // å¼ºåº¦
+    float time;                     // æ—¶é—´
+    uint16_t ring;                  // ç‚¹æ‰€å±çš„åœˆæ•°
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW // è¿›è¡Œå†…å­˜å¯¹é½
   };
 } // namespace velodyne_ros
 
-// ×¢²ávelodyne_rosµÄPointÀàĞÍ
+// æ³¨å†Œvelodyne_rosçš„Pointç±»å‹
 POINT_CLOUD_REGISTER_POINT_STRUCT(velodyne_ros::Point,
                                   (float, x, x)(float, y, y)(float, z, z)(float, intensity, intensity)(float, time, time)(uint16_t, ring, ring))
 
-// ousterÊı¾İ½á¹¹
+// ousteræ•°æ®ç»“æ„
 namespace ouster_ros
 {
   struct EIGEN_ALIGN16 Point
   {
-    PCL_ADD_POINT4D;                // 4Dµã×ø±êÀàĞÍ
-    float intensity;                // Ç¿¶È
-    uint32_t t;                     // Ê±¼ä
-    uint16_t reflectivity;          // ·´ÉäÂÊ
-    uint8_t ring;                   // µãËùÊôµÄÈ¦Êı
-    uint16_t ambient;               // Ã»ÓÃµ½
-    uint32_t range;                 // ¾àÀë
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW // ½øĞĞÄÚ´æ¶ÔÆë
+    PCL_ADD_POINT4D;                // 4Dç‚¹åæ ‡ç±»å‹
+    float intensity;                // å¼ºåº¦
+    uint32_t t;                     // æ—¶é—´
+    uint16_t reflectivity;          // åå°„ç‡
+    uint8_t ring;                   // ç‚¹æ‰€å±çš„åœˆæ•°
+    uint16_t ambient;               // æ²¡ç”¨åˆ°
+    uint32_t range;                 // è·ç¦»
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW // è¿›è¡Œå†…å­˜å¯¹é½
   };
 } // namespace ouster_ros
 
@@ -120,13 +120,13 @@ class Preprocess
   void set(bool feat_en, int lid_type, double bld, int pfilt_num);
 
   // sensor_msgs::PointCloud2::ConstPtr pointcloud;
-  PointCloudXYZI pl_full, pl_corn, pl_surf; // È«²¿µã¡¢±ßÔµµã¡¢Æ½Ãæµã
+  PointCloudXYZI pl_full, pl_corn, pl_surf; // å…¨éƒ¨ç‚¹ã€è¾¹ç¼˜ç‚¹ã€å¹³é¢ç‚¹
   PointCloudXYZI pl_buff[128]; //maximum 128 line lidar
   vector<orgtype> typess[128]; //maximum 128 line lidar
-  int lidar_type, point_filter_num, N_SCANS, SCAN_RATE; // À×´ïÀàĞÍ¡¢²ÉÑù¼ä¸ô¡¢É¨ÃèÏßÊı¡¢É¨ÃèÆµÂÊ
-  double blind; // ×îĞ¡¾àÀëãĞÖµ
-  bool feature_enabled, given_offset_time; // ÊÇ·ñÌáÈ¡ÌØÕ÷¡¢ÊÇ·ñ½øĞĞÊ±¼äÆ«ÒÆ
-  ros::Publisher pub_full, pub_surf, pub_corn; // ·¢²¼È«²¿µã¡¢·¢²¼Æ½Ãæµã¡¢·¢²¼±ßÔµµã
+  int lidar_type, point_filter_num, N_SCANS, SCAN_RATE; // é›·è¾¾ç±»å‹ã€é‡‡æ ·é—´éš”ã€æ‰«æçº¿æ•°ã€æ‰«æé¢‘ç‡
+  double blind; // æœ€å°è·ç¦»é˜ˆå€¼
+  bool feature_enabled, given_offset_time; // æ˜¯å¦æå–ç‰¹å¾ã€æ˜¯å¦è¿›è¡Œæ—¶é—´åç§»
+  ros::Publisher pub_full, pub_surf, pub_corn; // å‘å¸ƒå…¨éƒ¨ç‚¹ã€å‘å¸ƒå¹³é¢ç‚¹ã€å‘å¸ƒè¾¹ç¼˜ç‚¹
 
   private:
   void avia_handler(const livox_ros_driver::CustomMsg::ConstPtr &msg);
@@ -135,7 +135,7 @@ class Preprocess
   void give_feature(PointCloudXYZI &pl, vector<orgtype> &types);
   void pub_func(PointCloudXYZI &pl, const ros::Time &ct);
   int  plane_judge(const PointCloudXYZI &pl, vector<orgtype> &types, uint i, uint &i_nex, Eigen::Vector3d &curr_direct);
-  bool small_plane(const PointCloudXYZI &pl, vector<orgtype> &types, uint i_cur, uint &i_nex, Eigen::Vector3d &curr_direct); // Ã»ÓĞÓÃµ½
+  bool small_plane(const PointCloudXYZI &pl, vector<orgtype> &types, uint i_cur, uint &i_nex, Eigen::Vector3d &curr_direct); // æ²¡æœ‰ç”¨åˆ°
   bool edge_jump_judge(const PointCloudXYZI &pl, vector<orgtype> &types, uint i, Surround nor_dir);
   
   int group_size;
