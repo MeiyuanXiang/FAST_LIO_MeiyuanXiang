@@ -30,12 +30,12 @@
 std::vector<float> read_lidar_data(const std::string lidar_data_path)
 {
     std::ifstream lidar_data_file(lidar_data_path, std::ifstream::in | std::ifstream::binary);
-    lidar_data_file.seekg(0, std::ios::end);
-    const size_t num_elements = lidar_data_file.tellg() / sizeof(float);
-    lidar_data_file.seekg(0, std::ios::beg);
+    lidar_data_file.seekg(0, std::ios::end);                             // 文件指针指向文件末尾
+    const size_t num_elements = lidar_data_file.tellg() / sizeof(float); // 统计一下文件有多少float数据
+    lidar_data_file.seekg(0, std::ios::beg);                             // 再把指针指向文件开始
 
     std::vector<float> lidar_data_buffer(num_elements);
-    lidar_data_file.read(reinterpret_cast<char *>(&lidar_data_buffer[0]), num_elements * sizeof(float));
+    lidar_data_file.read(reinterpret_cast<char *>(&lidar_data_buffer[0]), num_elements * sizeof(float)); // 读取所有的数据
     return lidar_data_buffer;
 }
 
@@ -89,20 +89,23 @@ int main(int argc, char **argv)
     std::size_t line_num = 0;
 
     ros::Rate r(10.0 / publish_delay);
+    // 遍历时间戳这个文本文件
     while (std::getline(timestamp_file, line) && ros::ok())
     {
-        float timestamp = stof(line);
+        float timestamp = stof(line); // 把string转成浮点型float
+        // 找到对应的左右目的图片
         std::stringstream left_image_path, right_image_path;
         left_image_path << dataset_folder << "sequences/" + sequence_number + "/image_0/" << std::setfill('0') << std::setw(6) << line_num << ".png";
         cv::Mat left_image = cv::imread(left_image_path.str(), CV_LOAD_IMAGE_GRAYSCALE);
         right_image_path << dataset_folder << "sequences/" + sequence_number + "/image_1/" << std::setfill('0') << std::setw(6) << line_num << ".png";
         cv::Mat right_image = cv::imread(left_image_path.str(), CV_LOAD_IMAGE_GRAYSCALE);
 
+        // 得到ground truth的文件
         std::getline(ground_truth_file, line);
         std::stringstream pose_stream(line);
         std::string s;
         Eigen::Matrix<double, 3, 4> gt_pose;
-        for (std::size_t i = 0; i < 3; ++i)
+        for (std::size_t i = 0; i < 3; ++i) // 得到这个变换矩阵T
         {
             for (std::size_t j = 0; j < 4; ++j)
             {
@@ -111,11 +114,15 @@ int main(int argc, char **argv)
             }
         }
 
+        // 相机坐标系转到前左上的坐标系
         Eigen::Quaterniond q_w_i(gt_pose.topLeftCorner<3, 3>());
-        Eigen::Quaterniond q = q_transform * q_w_i;
+        //Eigen::Quaterniond q = q_transform * q_w_i;
+        // 此处应该添加 * q_transform.inverse()，如下所示
+        Eigen::Quaterniond q = q_transform * q_w_i * q_transform.inverse();
         q.normalize();
         Eigen::Vector3d t = q_transform * gt_pose.topRightCorner<3, 1>();
 
+        // 发布topic和path
         odomGT.header.stamp = ros::Time().fromSec(timestamp);
         odomGT.pose.pose.orientation.x = q.x();
         odomGT.pose.pose.orientation.y = q.y();
@@ -136,18 +143,20 @@ int main(int argc, char **argv)
         // read lidar point cloud
         std::stringstream lidar_data_path;
         lidar_data_path << dataset_folder << "velodyne/sequences/" + sequence_number + "/velodyne/"
-                        << std::setfill('0') << std::setw(6) << line_num << ".bin";
+                        << std::setfill('0') << std::setw(6) << line_num << ".bin"; // 获取lidar数据的文件名
         std::vector<float> lidar_data = read_lidar_data(lidar_data_path.str());
         std::cout << "totally " << lidar_data.size() / 4.0 << " points in this lidar frame \n";
 
         std::vector<Eigen::Vector3d> lidar_points;
         std::vector<float> lidar_intensities;
         pcl::PointCloud<pcl::PointXYZI> laser_cloud;
+        // 每个点数据占四个float数据，分别是xyz，intensity
         for (std::size_t i = 0; i < lidar_data.size(); i += 4)
         {
             lidar_points.emplace_back(lidar_data[i], lidar_data[i + 1], lidar_data[i + 2]);
             lidar_intensities.push_back(lidar_data[i + 3]);
 
+            // 构建pcl的点云格式
             pcl::PointXYZI point;
             point.x = lidar_data[i];
             point.y = lidar_data[i + 1];
@@ -156,12 +165,14 @@ int main(int argc, char **argv)
             laser_cloud.push_back(point);
         }
 
+        // 转成ros的消息格式
         sensor_msgs::PointCloud2 laser_cloud_msg;
         pcl::toROSMsg(laser_cloud, laser_cloud_msg);
         laser_cloud_msg.header.stamp = ros::Time().fromSec(timestamp);
         laser_cloud_msg.header.frame_id = "/camera_init";
-        pub_laser_cloud.publish(laser_cloud_msg);
+        pub_laser_cloud.publish(laser_cloud_msg); // 发布点云数据
 
+        // 图片也转成ros的消息发布出去
         sensor_msgs::ImagePtr image_left_msg = cv_bridge::CvImage(laser_cloud_msg.header, "mono8", left_image).toImageMsg();
         sensor_msgs::ImagePtr image_right_msg = cv_bridge::CvImage(laser_cloud_msg.header, "mono8", right_image).toImageMsg();
         pub_image_left.publish(image_left_msg);
